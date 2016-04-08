@@ -84,9 +84,16 @@
     "aui-form-builder-field-types": {
         "requires": [
             "aui-classnamemanager",
-            "aui-modal",
+            "aui-form-builder-field-types-modal",
             "base",
             "node-base"
+        ],
+        "skinnable": true
+    },
+
+    "aui-form-builder-field-types-modal": {
+        "requires": [
+            "aui-modal"
         ],
         "skinnable": true
     },
@@ -105,6 +112,7 @@
     "aui-form-builder-page-manager": {
         "requires": [
             "aui-pagination",
+            "aui-popover",
             "aui-tabview",
             "base",
             "event-valuechange",

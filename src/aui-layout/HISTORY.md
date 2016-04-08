@@ -4,6 +4,26 @@
 
 ## @VERSION@
 
+* [AUI-2097](https://issues.liferay.com/browse/AUI-2097) Move field button doesn't appear if the user navigates pressing tab key
+* [AUI-2095](https://issues.liferay.com/browse/AUI-2095) Disable move row action on escape key press
+* [AUI-2093](https://issues.liferay.com/browse/AUI-2093) Fix arrow icons alignment of the resize column handler
+* [AUI-2090](https://issues.liferay.com/browse/AUI-2090) Create string attribute entries to those sentences which are inside templates
+* [AUI-2089](https://issues.liferay.com/browse/AUI-2089) Wrong string "Past Here" should be "Paste Here"
+* [AUI-2072](https://issues.liferay.com/browse/AUI-2072) Paste row area and paste field area should have the same add field button's style
+* [AUI-2073](https://issues.liferay.com/browse/AUI-2073) Set the tab order on Form Builder
+* [AUI-1994](https://issues.liferay.com/browse/AUI-1994) Adds borders as separators on the Form Builder
+* [AUI-2033](https://issues.liferay.com/browse/AUI-2033) Change add/resize column icon
+
+## [3.0.3](https://github.com/liferay/alloy-ui/releases/tag/3.0.3)
+
+No changes.
+
+## [3.0.2](https://github.com/liferay/alloy-ui/releases/tag/3.0.2)
+
+* [AUI-2030](https://issues.liferay.com/browse/AUI-2030) A row with one col should be automatically added on last position when the last row have at least one field
+* [AUI-2036](https://issues.liferay.com/browse/AUI-2036) AUI Form Builder Field Settings Modal should not overwrite Bootstrap 3 Modal css rules so that the layout keeps as similar as possible
+* [AUI-2031](https://issues.liferay.com/browse/AUI-2031) JavaScript error thrown when trying to split a row into two columns
+* [AUI-2016](https://issues.liferay.com/browse/AUI-2016) Remove column delete button from From Builder
 * [AUI-1930](https://issues.liferay.com/browse/AUI-1930) Change functionality of add cols
 * [AUI-1939](https://issues.liferay.com/browse/AUI-1939) Fix form builder column resizing after the first page / layout
 * [AUI-1928](https://issues.liferay.com/browse/AUI-1928) Fields should be moved between others field in a same col

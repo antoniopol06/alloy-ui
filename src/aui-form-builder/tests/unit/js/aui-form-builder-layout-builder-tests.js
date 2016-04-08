@@ -224,31 +224,12 @@ YUI.add('aui-form-builder-layout-builder-tests', function(Y) {
             Y.Assert.areEqual(this._formBuilder.get('layouts')[0].get('rows').length, 1);
         },
 
-        'should hide button for removing row when a layout with a single row is added to the form builder': function() {
-            var layout = new Y.Layout({
-                rows: [
-                    new Y.LayoutRow({
-                        cols: [
-                            new Y.LayoutCol({
-                                size: 12,
-                                value: new Y.FormBuilderFieldList({
-                                    fields: [
-                                        new Y.FormBuilderFieldSentence({
-                                            help: 'My Help',
-                                            title: 'My Title'
-                                        })
-                                    ]
-                                })
-                            })
-                        ]
-                    })
-                ]
-            });
-
-            this._createFormBuilder({layouts: [layout]});
+        'should hide button for removing row when a layout with a single and empty row is added to the form builder': function() {
+            this._createFormBuilder({layouts: [new Y.Layout()]});
 
             Y.Assert.isNull(Y.one('.layout-builder-remove-row-button'));
         },
+
         'should remove a row with fields only if the confirmation button from the confirmation modal is clicked': function() {
             var button;
 
@@ -257,7 +238,6 @@ YUI.add('aui-form-builder-layout-builder-tests', function(Y) {
             button = this._formBuilder.get('contentBox').one('.layout-builder-remove-row-button');
 
             Y.Assert.isNotNull(button);
-            Y.Assert.areNotEqual('none', button.getStyle('display'));
             Y.Assert.areEqual(this._formBuilder.get('layouts')[0].get('rows').length, 2);
 
             Y.one('.layout-builder-remove-row-button').simulate('click');
@@ -275,8 +255,7 @@ YUI.add('aui-form-builder-layout-builder-tests', function(Y) {
             var button;
 
             this._createFormBuilder();
-
-            button = this._formBuilder.get('contentBox').one('.layout-builder-resize-col-draggable-handle.expand-left');
+            button = this._formBuilder.get('contentBox').one('.layout-builder-add-col-handle');
             Y.Assert.isNotNull(button);
         },
 
@@ -415,8 +394,20 @@ YUI.add('aui-form-builder-layout-builder-tests', function(Y) {
 
             layout = new Y.Layout({
                 rows: [
-                    new Y.LayoutRow(),
-                    new Y.LayoutRow()
+                    new Y.LayoutRow({
+                        cols: [
+                            new Y.LayoutCol({
+                                size: 4
+                            })
+                        ]
+                    }),
+                    new Y.LayoutRow({
+                        cols: [
+                            new Y.LayoutCol({
+                                size: 4
+                            })
+                        ]
+                    })
                 ]
             });
 
@@ -426,7 +417,7 @@ YUI.add('aui-form-builder-layout-builder-tests', function(Y) {
 
             this._formBuilder.render('#container');
             rowNodes = this._formBuilder.get('contentBox').all('.layout-row');
-            Y.Assert.areEqual(2, rowNodes.size());
+            Y.Assert.areEqual(3, rowNodes.size());
         },
 
         'should show valid field move targets for root field': function() {
@@ -451,7 +442,7 @@ YUI.add('aui-form-builder-layout-builder-tests', function(Y) {
             });
             Y.Assert.areEqual(4, visibleTargets.size());
 
-            moveItem.simulate('click');
+            Y.one('body').simulate('click');
             visibleTargets = rowNode.all('.form-builder-field-move-target').filter(function(node) {
                 return node.getStyle('display') !== 'none';
             });
@@ -481,7 +472,7 @@ YUI.add('aui-form-builder-layout-builder-tests', function(Y) {
             });
             Y.Assert.areEqual(8, visibleTargets.size());
 
-            moveItem.simulate('click');
+            Y.one('body').simulate('click');
             visibleTargets = rowNode.all('.form-builder-field-move-target').filter(function(node) {
                 return node.getStyle('display') !== 'none';
             });
@@ -599,7 +590,7 @@ YUI.add('aui-form-builder-layout-builder-tests', function(Y) {
             Y.Assert.areEqual(1, this._formBuilder.get('layouts')[0].get('rows').length);
         },
 
-        'should always add an empty row in the last position when a the previous row had more then one col': function() {
+        'should always add an empty row in the last position when the previous row had more then one col': function() {
             var breakpoint,
                 dragHandle,
                 layout;
@@ -607,7 +598,7 @@ YUI.add('aui-form-builder-layout-builder-tests', function(Y) {
             this._formBuilder = new Y.FormBuilder().render('#container');
 
             layout = this._formBuilder.get('layouts')[0];
-            dragHandle = layout.get('node').one('.layout-builder-resize-col-draggable-handle.expand-left');
+            dragHandle = layout.get('node').one('.layout-builder-add-col-handle');
             breakpoint = layout.get('rows')[0].get('node').all('.' + 'layout-builder-resize-col-breakpoint').item(1);
 
             Y.Assert.isNotNull(dragHandle);
@@ -617,6 +608,131 @@ YUI.add('aui-form-builder-layout-builder-tests', function(Y) {
                 Y.Assert.areEqual(2, layout.get('rows').length);
                 Y.Assert.areEqual(1, layout.get('rows')[1].get('cols').length);
             });
+        },
+
+        'should always add an empty row in the last position when the previous row had at least one field': function() {
+            var layout;
+
+            this._formBuilder = new Y.FormBuilder().render('#container');
+            layout = this._formBuilder.get('layouts')[0];
+            Y.Assert.areEqual(1, layout.get('rows').length);
+
+            layout.get('rows')[0].get('cols')[0].get('value').addField(new Y.FormBuilderFieldSentence());
+            Y.Assert.areEqual(2, layout.get('rows').length);
+            Y.Assert.areEqual(1, layout.get('rows')[1].get('cols').length);
+        },
+
+        'should show the large field button only in an empty column': function() {
+            var colNode,
+                field,
+                layout;
+
+            this._createFormBuilder();
+
+            layout = this._formBuilder.get('layouts')[0];
+
+            colNode = layout.get('rows')[0].get('cols')[0].get('node');
+            Y.Assert.isNull(colNode.one('.form-builder-field-list-add-button-visible'));
+
+            colNode = layout.get('rows')[0].get('cols')[1].get('node');
+            Y.Assert.isNotNull(colNode.one('.form-builder-field-list-add-button-visible'));
+
+            colNode = layout.get('rows')[0].get('cols')[2].get('node');
+            Y.Assert.isNull(colNode.one('.form-builder-field-list-add-button-visible'));
+
+            colNode = layout.get('rows')[1].get('cols')[0].get('node');
+            Y.Assert.isNotNull(colNode.one('.form-builder-field-list-add-button-visible'));
+
+            field = layout.get('rows')[0].get('cols')[0].get('value').get('fields')[0];
+            layout.get('rows')[0].get('cols')[0].get('value').removeField(field);
+            colNode = layout.get('rows')[0].get('cols')[0].get('node');
+            Y.Assert.isNotNull(colNode.one('.form-builder-field-list-add-button-visible'));
+
+            layout.get('rows')[0].get('cols')[0].get('value').addField(field);
+            Y.Assert.isNull(colNode.one('.form-builder-field-list-add-button-visible'));
+        },
+
+        'should add a large add field to all empty columns': function() {
+            var colNode,
+                field,
+                layout,
+                layouts;
+
+            layouts = [new Y.Layout({
+                rows: [
+                    new Y.LayoutRow({
+                        cols: [
+                            new Y.LayoutCol({
+                                movableContent: true,
+                                size: 4,
+                                value: new Y.FormBuilderFieldList({
+                                    fields: [
+                                        new Y.FormBuilderFieldSentence({
+                                            title: 'My Title2'
+                                        })
+                                    ]
+                                })
+                            }),
+                            new Y.LayoutCol({
+                                size: 8
+                            })
+                        ]
+                    })
+                ]
+            })];
+
+            this._createFormBuilder({layouts: layouts});
+
+            layout = this._formBuilder.get('layouts')[0];
+
+            colNode = layout.get('rows')[0].get('cols')[0].get('node');
+            Y.Assert.isNull(colNode.one('.form-builder-field-list-add-button-large'));
+
+            field = layout.get('rows')[0].get('cols')[0].get('value').get('fields')[0];
+            layout.get('rows')[0].get('cols')[0].get('value').removeField(field);
+            colNode = layout.get('rows')[0].get('cols')[0].get('node');
+            Y.Assert.isNotNull(colNode.one('.form-builder-field-list-add-button-large'));
+
+            colNode = layout.get('rows')[0].get('cols')[1].get('node');
+            Y.Assert.isNotNull(colNode.one('.form-builder-field-list-add-button-large'));
+
+            colNode = layout.get('rows')[1].get('cols')[0].get('node');
+            Y.Assert.isNotNull(colNode.one('.form-builder-field-list-add-button-large'));
+        },
+
+        'should remove the last row if the next to last row is empty': function() {
+            var colFull,
+                layout,
+                layouts;
+
+            colFull = new Y.LayoutCol({
+                size: 12
+            });
+
+            layouts = [new Y.Layout({
+                rows: [
+                    new Y.LayoutRow({
+                        cols: [
+                            new Y.LayoutCol({
+                                size: 4
+                            }),
+                            new Y.LayoutCol({
+                                size: 8
+                            })
+                        ]
+                    })
+                ]
+            })];
+
+            this._createFormBuilder({layouts: layouts});
+
+            layout = this._formBuilder.get('layouts')[0];
+
+            Y.Assert.areEqual(2, layout.get('rows').length);
+            layout.get('rows')[0].set('cols', [colFull]);
+
+            Y.Assert.areEqual(1, layout.get('rows').length);
+            layout.get('rows')[0].set('cols', [colFull]);
         }
     }));
 

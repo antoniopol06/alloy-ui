@@ -7,19 +7,25 @@
 var CSS_FIELD_LIST = A.getClassName('form', 'builder', 'field', 'list'),
     CSS_FIELD_LIST_ADD_BUTTON =
         A.getClassName('form', 'builder', 'field', 'list', 'add', 'button'),
-    CSS_FIELD_LIST_ADD_BUTTON_CIRCLE =
-        A.getClassName('form', 'builder', 'field', 'list', 'add', 'button', 'circle'),
-    CSS_FIELD_LIST_ADD_BUTTON_CONTENT =
-        A.getClassName('form', 'builder', 'field', 'list', 'add', 'button', 'content'),
     CSS_FIELD_LIST_ADD_BUTTON_ICON =
         A.getClassName('form', 'builder', 'field', 'list', 'add', 'button', 'icon'),
+    CSS_FIELD_LIST_ADD_BUTTON_LABEL =
+        A.getClassName('form', 'builder', 'field', 'list', 'add', 'button', 'label'),
+    CSS_FIELD_LIST_ADD_BUTTON_LARGE =
+        A.getClassName('form', 'builder', 'field', 'list', 'add', 'button', 'large'),
+    CSS_FIELD_LIST_ADD_BUTTON_PLUS_ICON =
+        A.getClassName('form', 'builder', 'field', 'list', 'add', 'button', 'plus', 'icon'),
     CSS_FIELD_LIST_ADD_BUTTON_VISIBLE =
         A.getClassName('form', 'builder', 'field', 'list', 'add', 'button', 'visible'),
+    CSS_FIELD_LIST_ADD_CONTAINER =
+        A.getClassName('form', 'builder', 'field', 'list', 'add', 'container'),
     CSS_FIELD_LIST_CONTAINER =
         A.getClassName('form', 'builder', 'field', 'list', 'container'),
     CSS_FIELD_LIST_EMPTY = A.getClassName('form', 'builder', 'field', 'list', 'empty'),
     CSS_FIELD_MOVE_TARGET =
         A.getClassName('form', 'builder', 'field', 'move', 'target'),
+    CSS_FIELD_MOVE_TARGET_LABEL =
+        A.getClassName('form', 'builder', 'field', 'move', 'target', 'label'),
     CSS_LIST_MOVE_TARGET =
         A.getClassName('form', 'builder', 'list', 'move', 'target');
 
@@ -33,19 +39,19 @@ var CSS_FIELD_LIST = A.getClassName('form', 'builder', 'field', 'list'),
  * @constructor
  */
 A.FormBuilderFieldList  = A.Base.create('form-builder-field-list', A.Base, [], {
-    TPL_ADD_FIELD: '<div class="' + CSS_FIELD_LIST_ADD_BUTTON + ' ' +
-        CSS_FIELD_LIST_ADD_BUTTON_VISIBLE + '" tabindex="9">' +
-        '<div class="' + CSS_FIELD_LIST_ADD_BUTTON_CONTENT + '">' +
-        '<span class="' + CSS_FIELD_LIST_ADD_BUTTON_CIRCLE + '">' +
-        '<span class="' + CSS_FIELD_LIST_ADD_BUTTON_ICON + '"></span>' +
-        '</span>' +
-        '</div></div>',
+    TPL_ADD_FIELD: '<div class="' + CSS_FIELD_LIST_ADD_CONTAINER + '">' +
+        '<a class="' + CSS_FIELD_LIST_ADD_BUTTON + '" href="javascript:;">' +
+        '<span class="' + CSS_FIELD_LIST_ADD_BUTTON_ICON + ' ' + CSS_FIELD_LIST_ADD_BUTTON_PLUS_ICON + '">+</span>' +
+        '<label class="' + CSS_FIELD_LIST_ADD_BUTTON_LABEL + '">' +
+        '{addField}' +
+        '</label>' +
+        '</a></div>',
     TPL_FIELD_LIST: '<div class="' + CSS_FIELD_LIST + '">' +
         '<div class="' + CSS_FIELD_LIST_CONTAINER + '"></div>' +
         '</div>',
     TPL_FIELD_MOVE_TARGET: '<button type="button" class="' + CSS_FIELD_MOVE_TARGET + ' ' + CSS_LIST_MOVE_TARGET +
-        ' layout-builder-move-target layout-builder-move-col-target btn btn-default">' +
-        '{pasteHere}</button>',
+        ' layout-builder-move-target layout-builder-move-col-target">' +
+        '<label class="' + CSS_FIELD_MOVE_TARGET_LABEL + '">{pasteHere}</label></button>',
 
     /**
      * Construction logic executed during the `A.FormBuilderFieldList`
@@ -59,9 +65,9 @@ A.FormBuilderFieldList  = A.Base.create('form-builder-field-list', A.Base, [], {
 
         this._uiSetFields(this.get('fields'));
 
-        content.delegate('click', this._onClickAddField, '.' + CSS_FIELD_LIST_ADD_BUTTON_CIRCLE, this),
-        content.delegate('mouseenter', this._onMouseEnterAddButton, '.' + CSS_FIELD_LIST_ADD_BUTTON, this),
-        content.delegate('mouseleave', this._onMouseLeaveAddButton, '.' + CSS_FIELD_LIST_ADD_BUTTON, this),
+        content.delegate('click', this._onClickAddField, '.' + CSS_FIELD_LIST_ADD_BUTTON, this);
+        content.delegate('mouseenter', this._onMouseEnterAddButton, '.' + CSS_FIELD_LIST_ADD_CONTAINER, this);
+        content.delegate('mouseleave', this._onMouseLeaveAddButton, '.' + CSS_FIELD_LIST_ADD_CONTAINER, this);
 
         this.after('fieldsChange', A.bind(this._afterFieldsChange, this));
     },
@@ -101,6 +107,18 @@ A.FormBuilderFieldList  = A.Base.create('form-builder-field-list', A.Base, [], {
     },
 
     /**
+     * Executed to the last empty column.
+     *
+     * @method _addEmptyColumnFieldClasses
+     * @param {Node} content
+     * @protected
+     */
+    _addEmptyColumnFieldClasses: function(content) {
+        content.one('.' + CSS_FIELD_LIST_ADD_CONTAINER).addClass(CSS_FIELD_LIST_ADD_BUTTON_VISIBLE);
+        content.one('.' + CSS_FIELD_LIST_ADD_BUTTON).addClass(CSS_FIELD_LIST_ADD_BUTTON_LARGE);
+    },
+
+    /**
      * Fired after the `fields` attribute is set.
      *
      * @method _afterFieldsChange
@@ -118,27 +136,40 @@ A.FormBuilderFieldList  = A.Base.create('form-builder-field-list', A.Base, [], {
      *
      * @method _appendAddFieldNode
      * @param {Node} container
-     * @param {Number} index
-     * @param {Boolean} visible
      * @protected
      */
-    _appendAddFieldNode: function(container, index, visible) {
-        var addFieldNode,
-            moveTargetNode;
+    _appendAddFieldNode: function(container) {
+        var addFieldNode;
 
-        addFieldNode = A.Node.create(this.TPL_ADD_FIELD);
+        addFieldNode = A.Node.create(A.Lang.sub(this.TPL_ADD_FIELD, {
+            addField: this.get('strings').addField
+        }));
+
+        container.append(addFieldNode);
+
+        return addFieldNode;
+    },
+
+    /**
+     * Appends move target button on the given container.
+     *
+     * @method _appendAddMoveTargetNode
+     * @param {Node} container
+     * @param {Number} index
+     * @protected
+     */
+    _appendAddMoveTargetNode: function(container, index) {
+        var moveTargetNode;
+
         moveTargetNode = A.Node.create(A.Lang.sub(this.TPL_FIELD_MOVE_TARGET, {
             pasteHere: this.get('strings').pasteHere
         }));
 
-        if (!visible) {
-            addFieldNode.removeClass(CSS_FIELD_LIST_ADD_BUTTON_VISIBLE);
-        }
-
         moveTargetNode.setData('field-list-index', index);
 
-        container.append(addFieldNode);
         container.append(moveTargetNode);
+
+        return moveTargetNode;
     },
 
     /**
@@ -149,7 +180,7 @@ A.FormBuilderFieldList  = A.Base.create('form-builder-field-list', A.Base, [], {
      * @protected
      */
     _onClickAddField: function(event) {
-        var emptyFieldList = this.get('content').all('.' + CSS_FIELD_LIST_ADD_BUTTON_CIRCLE);
+        var emptyFieldList = this.get('content').all('.' + CSS_FIELD_LIST_ADD_BUTTON);
 
         this._newFieldIndex = emptyFieldList.indexOf(event.currentTarget);
     },
@@ -164,7 +195,9 @@ A.FormBuilderFieldList  = A.Base.create('form-builder-field-list', A.Base, [], {
     _onMouseEnterAddButton: function(event) {
         var addButtonNode = event.currentTarget;
 
-        addButtonNode.addClass(CSS_FIELD_LIST_ADD_BUTTON_VISIBLE);
+        if (this.get('fields').length > 0) {
+            addButtonNode.addClass(CSS_FIELD_LIST_ADD_BUTTON_VISIBLE);
+        }
     },
 
     /**
@@ -175,13 +208,27 @@ A.FormBuilderFieldList  = A.Base.create('form-builder-field-list', A.Base, [], {
      * @protected
      */
     _onMouseLeaveAddButton: function(event) {
-        var addButtonNode = event.currentTarget,
-            content = this.get('content'),
-            addButtonsNodeList = content.all('.' + CSS_FIELD_LIST_ADD_BUTTON);
+        var addButtonNode = event.currentTarget;
 
-        if (addButtonsNodeList.indexOf(addButtonNode) < addButtonsNodeList.size() - 1) {
+        if (this.get('fields').length > 0) {
             addButtonNode.removeClass(CSS_FIELD_LIST_ADD_BUTTON_VISIBLE);
         }
+    },
+
+    /**
+     * Append a field and its necessaries elements into a given container.
+     *
+     * @method _uiSetField
+     * @param {Node} container
+     * @param {Node} field
+     * @param {Number} index
+     * @protected
+     */
+    _uiSetField: function(container, field, index) {
+        this._appendAddFieldNode(container);
+        this._appendAddMoveTargetNode(container, index);
+
+        container.append(field.get('content'));
     },
 
     /**
@@ -199,13 +246,17 @@ A.FormBuilderFieldList  = A.Base.create('form-builder-field-list', A.Base, [], {
         container.empty();
 
         for (index = 0; index < fields.length; index++) {
-            this._appendAddFieldNode(container, index, false);
-            container.append(fields[index].get('content'));
+            this._uiSetField(container, fields[index], index);
         }
 
-        this._appendAddFieldNode(container, index, true);
+        this._appendAddFieldNode(container);
+        this._appendAddMoveTargetNode(container, index);
 
         content.toggleClass(CSS_FIELD_LIST_EMPTY, !fields.length);
+
+        if (fields.length === 0) {
+            this._addEmptyColumnFieldClasses(content);
+        }
     },
 
     /**
@@ -271,6 +322,7 @@ A.FormBuilderFieldList  = A.Base.create('form-builder-field-list', A.Base, [], {
          */
         strings: {
             value: {
+                addField: 'Add Field',
                 pasteHere: 'Paste here'
             },
             writeOnce: true

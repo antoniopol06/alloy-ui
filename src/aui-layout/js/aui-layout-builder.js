@@ -23,7 +23,6 @@ var CSS_LAYOUT_BUILDER_LAYOUT_CONTAINER = A.getClassName('layout', 'builder', 'l
 A.LayoutBuilder = A.Base.create('layout-builder', A.Base, [
     A.LayoutBuilderAddCol,
     A.LayoutBuilderMove,
-    A.LayoutBuilderRemoveCol,
     A.LayoutBuilderRemoveRow,
     A.LayoutBuilderResizeCol,
     // It's necessary that A.LayoutBuilderAddRow is the last to be loaded.
@@ -156,7 +155,9 @@ A.LayoutBuilder = A.Base.create('layout-builder', A.Base, [
          */
         strings: {
             value: {
-                addColumn: 'Add Column'
+                addColumn: 'Add Column',
+                addRow: 'Add Row',
+                pasteHere: 'Paste Here'
             },
             writeOnce: true
         }

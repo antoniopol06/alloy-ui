@@ -495,7 +495,7 @@ YUI.add('aui-layout-builder-resize-col-tests', function(Y) {
 
             this._layoutBuilder.set('enableAddCols', true);
 
-            handleAddColumn = row.one('.layout-builder-resize-col-draggable-handle.expand-left');
+            handleAddColumn = row.one('.layout-builder-add-col-handle');
             breakpointToAdding = row.all('.' + CSS_RESIZE_COL_BREAKPOINT).item(1);
 
             Assert.areEqual(true, cols.item(0).getData('layout-col').get('removable'));
@@ -529,7 +529,7 @@ YUI.add('aui-layout-builder-resize-col-tests', function(Y) {
             Assert.areEqual(true, cols.item(0).getData('layout-col').get('removable'));
             Assert.areEqual(4, cols._nodes.length);
 
-            handleAddColumn = row.one('.layout-builder-resize-col-draggable-handle.expand-right');
+            handleAddColumn = row.all('.layout-builder-add-col-handle').item(1);
             breakpointToAdding = row.all('.' + CSS_RESIZE_COL_BREAKPOINT).item(11);
 
             instance._simulateDragToBreakpoint(instance, handleAddColumn, breakpointToAdding, function() {
@@ -666,6 +666,63 @@ YUI.add('aui-layout-builder-resize-col-tests', function(Y) {
             this._simulateDragToBreakpoint(this, dragHandle, breakpoint, function() {
                 Assert.areEqual(2, row.get('cols').length);
             });
+        },
+
+        'should show draggable bars of the column\'s boundaries whenever the cursor is over the column': function() {
+            var col,
+                dragHandle,
+                row = this._layoutBuilder.get('layout').get('rows')[1];
+
+            col = row.get('cols')[0];
+            dragHandle = row.get('node').all('.' + CSS_RESIZE_COL_DRAGGABLE);
+
+            col.get('node').simulate('mouseover');
+
+            Assert.areEqual(true, dragHandle.item(0).hasClass('layout-builder-resize-col-draggable-visible'));
+            Assert.areEqual(true, dragHandle.item(2).hasClass('layout-builder-resize-col-draggable-visible'));
+        },
+
+        'should hide draggable bars of the column\'s boundaries whenever the cursor goes out of the column': function() {
+            var col,
+                dragHandle,
+                row = this._layoutBuilder.get('layout').get('rows')[1];
+
+            col = row.get('cols')[0];
+            dragHandle = row.get('node').all('.' + CSS_RESIZE_COL_DRAGGABLE);
+
+            col.get('node').simulate('mouseout');
+
+            Assert.areEqual(false, dragHandle.item(0).hasClass('layout-builder-resize-col-draggable-visible'));
+            Assert.areEqual(false, dragHandle.item(2).hasClass('layout-builder-resize-col-draggable-visible'));
+        },
+
+        'should show draggable bars of the column\'s boundaries beside a handlers when the mouse is over it': function() {
+            var dragHandle,
+                row = this._layoutBuilder.get('layout').get('rows')[1];
+
+            dragHandle = row.get('node').all('.' + CSS_RESIZE_COL_DRAGGABLE);
+
+            dragHandle.item(2).simulate('mouseover');
+
+            Assert.areEqual(true, dragHandle.item(0).hasClass('layout-builder-resize-col-draggable-visible'));
+            Assert.areEqual(true, dragHandle.item(1).hasClass('layout-builder-resize-col-draggable-visible'));
+            Assert.areEqual(true, dragHandle.item(2).hasClass('layout-builder-resize-col-draggable-visible'));
+
+            dragHandle.item(2).simulate('mouseout');
+
+            dragHandle.item(0).simulate('mouseover');
+
+            Assert.areEqual(true, dragHandle.item(0).hasClass('layout-builder-resize-col-draggable-visible'));
+            Assert.areEqual(false, dragHandle.item(1).hasClass('layout-builder-resize-col-draggable-visible'));
+            Assert.areEqual(true, dragHandle.item(2).hasClass('layout-builder-resize-col-draggable-visible'));
+
+            dragHandle.item(0).simulate('mouseout');
+
+            dragHandle.item(1).simulate('mouseover');
+
+            Assert.areEqual(false, dragHandle.item(0).hasClass('layout-builder-resize-col-draggable-visible'));
+            Assert.areEqual(true, dragHandle.item(1).hasClass('layout-builder-resize-col-draggable-visible'));
+            Assert.areEqual(true, dragHandle.item(2).hasClass('layout-builder-resize-col-draggable-visible'));
         }
     }));
 

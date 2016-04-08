@@ -99,15 +99,12 @@ A.FormBuilderLayoutBuilder.prototype = {
      * Executed after the `layout:rowsChange` is fired.
      *
      * @method _afterLayoutBuilderColsChange
-     * @param {EventFacade} event
      * @protected
      */
-    _afterLayoutBuilderColsChange: function(event) {
-        var lastRow = this._getLastRow();
+    _afterLayoutBuilderColsChange: function() {
+        var activeLayout = this.getActiveLayout();
 
-        if (lastRow === event.target) {
-            this._checkLastRow();
-        }
+        this._checkLastRow(activeLayout);
     },
 
     /**
@@ -127,7 +124,8 @@ A.FormBuilderLayoutBuilder.prototype = {
             container: this.get('contentBox').one('.' + CSS_LAYOUT),
             layout: this.getActiveLayout(),
             removeColMoveButtons: A.bind(this._removeColMoveButtons, this),
-            removeColMoveTargets: A.bind(this._removeColMoveTargets, this)
+            removeColMoveTargets: A.bind(this._removeColMoveTargets, this),
+            strings: this.get('strings')
         });
 
         originalChooseColMoveTargetFn = this._layoutBuilder.get('chooseColMoveTarget');
@@ -135,31 +133,46 @@ A.FormBuilderLayoutBuilder.prototype = {
             originalChooseColMoveTargetFn));
 
         this._eventHandles.push(
-            this._fieldToolbar.on('onToolbarFieldMouseEnter', A.bind(this._onFormBuilderToolbarFieldMouseEnter, this))
+            this._fieldToolbar.on('onToolbarHasAddedToField', A.bind(this._onFormBuilderToolbarHasAddedToField, this))
         );
 
         this._removeLayoutCutColButtons();
-
-        this._checkLastRow();
     },
 
     /**
-     * Checks if the last row has more than one col, if yes a new row is
-     * created and set as the last position.
+     * Checks if the last row has more than one col or if it has at least one field,
+     * if true a new row is created and set on the last position.
      *
      * @method _checkLastRow
+     * @param {A.Layout} layout
      * @protected
      */
-    _checkLastRow: function() {
-        var lastRow = this._getLastRow();
+    _checkLastRow: function(layout) {
+        var cols,
+            lastRow,
+            nextToLast,
+            rows;
 
-        if (lastRow.get('cols').length > 1) {
-            lastRow.set('removable', true);
-            this._createLastRow();
+        lastRow = this._getLastRow(layout);
+        cols = lastRow.get('cols');
+
+        if (cols.length > 1 || !this._isColumnEmpty(cols[0])) {
+            this._createLastRow(layout);
         }
         else {
-            lastRow.set('removable', false);
+            rows = layout.get('rows');
+            nextToLast = rows[rows.length - 2];
+
+            if (nextToLast) {
+                cols = nextToLast.get('cols');
+
+                if (cols.length === 1 && this._isColumnEmpty(cols[0])) {
+                    layout.removeRow(nextToLast);
+                }
+            }
         }
+
+        this._getLastRow(layout).set('removable', false);
     },
 
     /**
@@ -182,6 +195,8 @@ A.FormBuilderLayoutBuilder.prototype = {
 
         fieldNode.addClass(CSS_FIELD_MOVING);
 
+        fieldNode.all('.' + CSS_FIELD_MOVE_TARGET).addClass(CSS_FIELD_MOVE_TARGET_INVALID);
+
         targetNode = fieldNode.previous('.' + CSS_FIELD_MOVE_TARGET);
         if (targetNode) {
             targetNode.addClass(CSS_FIELD_MOVE_TARGET_INVALID);
@@ -196,6 +211,8 @@ A.FormBuilderLayoutBuilder.prototype = {
         this._addColMoveTarget(col);
 
         layout.normalizeColsHeight(layout.get('node').all('.row'));
+
+        this._selectFirstValidMoveTarget();
 
         this._cancelMoveFieldHandles = [
             A.one(A.config.doc).on('click', A.bind(this._onClickOutsideMoveTarget, this)),
@@ -256,6 +273,7 @@ A.FormBuilderLayoutBuilder.prototype = {
      *
      * @method _clickRemoveRow
      * @param {A.LayoutRow} row
+     * @return {Boolean}
      * @protected
      */
     _clickRemoveRow: function(row) {
@@ -281,14 +299,12 @@ A.FormBuilderLayoutBuilder.prototype = {
      * Creates a new row in the last position.
      *
      * @method _createLastRow
+     * @param {A.Layout} layout
      * @protected
      */
-    _createLastRow: function() {
+    _createLastRow: function(layout) {
         var lastRow = new A.LayoutRow(),
-            layout = this.getActiveLayout(),
             rows = layout.get('rows');
-
-        lastRow.set('removable', false);
 
         layout.addRow(rows.length, lastRow);
     },
@@ -319,15 +335,15 @@ A.FormBuilderLayoutBuilder.prototype = {
      * Gets the last row.
      *
      * @method _getLastRow
+     * @param {A.Layout} layout
      * @protected
      * @return {A.LayoutRow}
      */
-    _getLastRow: function() {
-        var rows = this.getActiveLayout().get('rows');
+    _getLastRow: function(layout) {
+        var rows = layout.get('rows');
 
         return rows[rows.length - 1];
     },
-
 
     /**
      * Create a confirmation modal to be used when a remove row button from a row with
@@ -345,7 +361,7 @@ A.FormBuilderLayoutBuilder.prototype = {
             modal: true,
             resizable: false,
             visible: false,
-            zIndex: 2
+            zIndex: 4
         }).render();
 
         modal.addToolbar([
@@ -369,6 +385,18 @@ A.FormBuilderLayoutBuilder.prototype = {
         ]);
 
         this._removeConfirmationModal = modal;
+    },
+
+    /**
+     * Checks if the given column is empty.
+     *
+     * @method _isColumnEmpty
+     * @param {A.LayoutCol} col
+     * @return {Boolean}
+     * @protected
+     */
+    _isColumnEmpty: function(col) {
+        return !col.get('value') || !col.get('value').get('fields').length;
     },
 
     /**
@@ -412,12 +440,12 @@ A.FormBuilderLayoutBuilder.prototype = {
     /**
      * Fired when mouse enters a toolbar's field.
      *
-     * @method _onFormBuilderToolbarFieldMouseEnter
+     * @method _onFormBuilderToolbarHasAddedToField
      * @params {EventFacade} event
      * @protected
      */
-    _onFormBuilderToolbarFieldMouseEnter: function(event) {
-        this._toggleMoveColItem(event.colNode);
+    _onFormBuilderToolbarHasAddedToField: function(event) {
+        this._setMoveButtonData(event.colNode);
     },
 
     /**
@@ -458,17 +486,28 @@ A.FormBuilderLayoutBuilder.prototype = {
     },
 
     /**
+     * Find and focus on first valid move target.
+     *
+     * @method _selectFirstValidMoveTarget
+     * @protected
+     */
+    _selectFirstValidMoveTarget: function() {
+        var moveTarget = A.one('.' + CSS_FIELD_MOVE_TARGET + ':not(.' + CSS_FIELD_MOVE_TARGET_INVALID + ')');
+
+        moveTarget.focus();
+    },
+
+    /**
      * Show or hide move item in toolbar.
      *
-     * @method _toggleMoveColItem
+     * @method _setMoveButtonData
      * @param {Node} colNode
      * @protected
      */
-    _toggleMoveColItem: function(colNode) {
-        var moveItem = this._fieldToolbar.getItem('.glyphicon-move').ancestor();
+    _setMoveButtonData: function(colNode) {
+        var moveItem = this._fieldToolbar.getItem('.layout-builder-move-cut-button');
 
         moveItem.setData('layout-row', colNode.ancestor('.row').getData('layout-row'));
         moveItem.setData('node-col', colNode);
-        moveItem.removeClass('hidden');
     }
 };

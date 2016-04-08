@@ -103,7 +103,7 @@ YUI.add('aui-form-builder-tests', function(Y) {
          * @protected
          */
         _clickCreateNewField: function() {
-            Y.one('.form-builder-field-list-add-button-circle').simulate('click');
+            Y.one('.form-builder-field-list-add-button').simulate('click');
         },
 
         /**
@@ -452,13 +452,13 @@ YUI.add('aui-form-builder-tests', function(Y) {
 
             field = Y.one('.form-builder-field').getData('field-instance');
             this._formBuilder.editField(field);
-            Y.Assert.areEqual(Y.one('.form-builder-field-settings-label').getHTML(), 'Sentence');
+            Y.Assert.areEqual(Y.one('.modal-title').getHTML(), 'Sentence');
 
             field = Y.all('.form-builder-field').item(1).getData('field-instance');
             Y.one('.form-builder-field-settings-cancel').simulate('mousemove');
             Y.one('.form-builder-field-settings-cancel').simulate('click');
             this._formBuilder.editField(field);
-            Y.Assert.areEqual(Y.one('.form-builder-field-settings-label').getHTML(), 'Text');
+            Y.Assert.areEqual(Y.one('.modal-title').getHTML(), 'Text');
         },
 
         'should disable adding unique field already used by creating one': function() {
@@ -619,22 +619,6 @@ YUI.add('aui-form-builder-tests', function(Y) {
             Y.Assert.isTrue(Y.one('.field-type').hasClass('field-type-disabled'));
         },
 
-        'should open new field type selection when key press on add field button': function() {
-            var addFieldButton;
-
-            this.createFormBuilder();
-
-            addFieldButton = Y.one('.form-builder-field-list-add-button-circle');
-            addFieldButton.focus();
-            addFieldButton.simulate('keydown', {
-                keyCode: 13
-            });
-
-            this._formBuilder._fieldTypesModal.get('visible');
-
-            Y.Assert.isTrue(this._formBuilder._fieldTypesModal.get('visible'));
-        },
-
         'should show toolbar settings only when focus on a field': function() {
             var node;
 
@@ -651,6 +635,32 @@ YUI.add('aui-form-builder-tests', function(Y) {
             this._formBuilder._onFocus({ target: node });
 
             Y.Assert.isNull(Y.one('.form-builder-field-toolbar'));
+        },
+
+        'should not show toolbar on a field if the toolbar is already already inside a child of this field': function() {
+            var mock,
+                node,
+                toolbar;
+
+            this.createFormBuilder();
+
+            mock = Y.Mock();
+            toolbar = this._formBuilder._fieldToolbar;
+
+            Y.Mock.expect(mock, {
+                args: [Y.Mock.Value.Object],
+                callCount: 1,
+                method: 'addForField'
+            });
+
+            Y.after(mock.addForField, toolbar, 'addForField');
+
+            node = Y.one('.form-builder-field');
+
+            this._formBuilder._onFocus({ target: node });
+            this._formBuilder._onFocus({ target: node });
+
+            Y.Mock.verify(mock);
         },
 
         'should be able to create a layout using an object instead of an instance of Layout': function() {
@@ -745,7 +755,7 @@ YUI.add('aui-form-builder-tests', function(Y) {
             this.createFormBuilder();
 
             Y.Assert.areEqual(1, this._formBuilder.get('layouts').length);
-            Y.one('.form-builder-page-manager-add-page').simulate('click');
+            Y.one('.form-builder-page-manager-add-last-position').simulate('click');
             Y.Assert.areEqual(2, this._formBuilder.get('layouts').length);
         },
 
@@ -755,16 +765,16 @@ YUI.add('aui-form-builder-tests', function(Y) {
             });
 
             Y.Assert.areEqual(2, this._formBuilder.get('layouts').length);
-            Y.one('.form-builder-page-manager-remove-page').simulate('click');
+            Y.one('.form-builder-page-manager-delete-page').simulate('click');
             Y.Assert.areEqual(1, this._formBuilder.get('layouts').length);
-            Y.one('.form-builder-page-manager-remove-page').simulate('click');
+            Y.one('.form-builder-page-manager-delete-page').simulate('click');
             Y.Assert.areEqual(1, this._formBuilder.get('layouts').length);
         },
 
         'should update page when page selected': function() {
             this.createFormBuilder();
 
-            Y.one('.form-builder-page-manager-add-page').simulate('click');
+            Y.one('.form-builder-page-manager-add-last-position').simulate('click');
 
             Y.Assert.areEqual(1, this._formBuilder.getActiveLayout().get('rows').length);
             Y.one('.pagination-control').simulate('click');

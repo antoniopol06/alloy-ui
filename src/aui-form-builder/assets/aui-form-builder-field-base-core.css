@@ -1,23 +1,14 @@
-.form-field {
-    position: relative;
-}
-
-.form-field .form-builder-field-content-toolbar {
-    position: relative;
-}
-
 .form-builder-field-footer-content {
-    width: 100%;
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    padding: 6px 30px;
     background-color: #ccc;
+    bottom: 0;
+    padding: 6px 30px;
+    position: absolute;
+    left: 0;
+    width: 100%;
 }
 
-.form-builder-field-settings-content .modal-body {
-    max-height: 450px;
-    overflow-y: auto;
+.form-builder-field-nested .form-builder-field-move-target {
+    margin-top: 11px;
 }
 
 .form-builder-field-settings-panel .tab-pane {
@@ -33,7 +24,6 @@
     background-color: #f4f4f4;
     border-bottom: none;
     color: #54aaff;
-    font-family: "Helvetica Neue";
     font-size: 12px;
     font-weight: 400;
     line-height: 28px;
@@ -50,5 +40,13 @@
 
 .form-builder-field-settings-panel-content {
     border-bottom: none;
-    padding: 10px 30px 0;
+}
+
+.form-field {
+    position: relative;
+    border: 1px solid transparent;
+}
+
+.form-field .form-builder-field-content-toolbar {
+    position: relative;
 }

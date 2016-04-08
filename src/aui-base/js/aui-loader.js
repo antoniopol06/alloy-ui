@@ -384,7 +384,8 @@ Y.mix(YUI.Env[Y.version].modules, {
         "requires": [
             "aui-datatable-base-cell-editor",
             "escape"
-        ]
+        ],
+        "skinnable": true
     },
     "aui-datatable-body": {
         "requires": [
@@ -897,9 +898,15 @@ Y.mix(YUI.Env[Y.version].modules, {
     "aui-form-builder-field-types": {
         "requires": [
             "aui-classnamemanager",
-            "aui-modal",
+            "aui-form-builder-field-types-modal",
             "base",
             "node-base"
+        ],
+        "skinnable": true
+    },
+    "aui-form-builder-field-types-modal": {
+        "requires": [
+            "aui-modal"
         ],
         "skinnable": true
     },
@@ -916,6 +923,7 @@ Y.mix(YUI.Env[Y.version].modules, {
     "aui-form-builder-page-manager": {
         "requires": [
             "aui-pagination",
+            "aui-popover",
             "aui-tabview",
             "base",
             "event-valuechange",
@@ -1073,7 +1081,8 @@ Y.mix(YUI.Env[Y.version].modules, {
             "base-build",
             "imageloader",
             "node-base",
-            "widget"
+            "widget",
+            "widget-stack"
         ],
         "skinnable": true
     },
@@ -1183,7 +1192,6 @@ Y.mix(YUI.Env[Y.version].modules, {
             "aui-layout-builder-add-col",
             "aui-layout-builder-add-row",
             "aui-layout-builder-move",
-            "aui-layout-builder-remove-col",
             "aui-layout-builder-remove-row",
             "aui-layout-builder-resize-col",
             "aui-node-base",
@@ -1212,13 +1220,6 @@ Y.mix(YUI.Env[Y.version].modules, {
         "requires": [
             "aui-node-base",
             "base-build"
-        ],
-        "skinnable": true
-    },
-    "aui-layout-builder-remove-col": {
-        "requires": [
-            "event-key",
-            "node-base"
         ],
         "skinnable": true
     },
@@ -1747,6 +1748,7 @@ Y.mix(YUI.Env[Y.version].modules, {
             "dd-drag",
             "dd-drop",
             "dd-proxy",
+            "dd-scroll",
             "aui-node",
             "aui-component"
         ]
@@ -1789,7 +1791,8 @@ Y.mix(YUI.Env[Y.version].modules, {
     },
     "aui-surface-screen-html": {
         "requires": [
-            "io",
+            "aui-base",
+            "aui-io-request",
             "aui-promise",
             "aui-surface-screen",
             "aui-url"
@@ -2131,3 +2134,4 @@ Y.mix(YUI.Env[Y.version].modules, {
     }
 });
 YUI.Env[Y.version].md5 = '834d0b256b03cc48178ba69d840a42af';
+

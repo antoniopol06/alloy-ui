@@ -11,13 +11,14 @@ var CSS_MOVE_CANCEL = A.getClassName('layout', 'builder', 'move', 'cancel'),
     CSS_MOVE_CUT_COL_BUTTON = A.getClassName('layout', 'builder', 'move', 'cut', 'col', 'button'),
     CSS_MOVE_ROW_TARGET = A.getClassName('layout', 'builder', 'move', 'row', 'target'),
     CSS_MOVE_TARGET = A.getClassName('layout', 'builder', 'move', 'target'),
+    CSS_MOVE_TARGET_LABEL = A.getClassName('layout', 'builder', 'move', 'target', 'label'),
     CSS_ROW_CONTAINER_ROW = A.getClassName('layout', 'row', 'container', 'row'),
 
     SELECTOR_COL = '.col',
     SELECTOR_ROW = '.layout-row',
 
-    TPL_MOVE_CUT = '<div class="' + CSS_MOVE_CUT_BUTTON + '" tabindex="2"></div>',
-    TPL_MOVE_TARGET = '<div class="' + CSS_MOVE_TARGET + '" tabindex="3">Move</div>';
+    TPL_MOVE_CUT = '<div class="' + CSS_MOVE_CUT_BUTTON + '" tabindex="0"></div>',
+    TPL_MOVE_TARGET = '<div class="' + CSS_MOVE_TARGET + '"><span class="' + CSS_MOVE_TARGET_LABEL + '">{pasteHere}<span></div>';
 
 /**
  * A base class for Layout Move.
@@ -64,7 +65,8 @@ LayoutBuilderMove.prototype = {
             this.after('layout-row:movableChange', A.bind(this._afterMoveMovableChange, this)),
             this.after('layout:rowsChange', A.bind(this._afterMoveRowsChange, this)),
             this.after('layout:isColumnModeChange', A.bind(this._afterMoveIsColumnModeChange, this)),
-            this.after('layoutChange', A.bind(this._afterMoveLayoutChange, this))
+            this.after('layoutChange', A.bind(this._afterMoveLayoutChange, this)),
+            A.one('doc').on('key', this._onEscKey, 'esc', this)
         );
 
         this._uiSetEnableMoveRows(this.get('enableMoveRows'));
@@ -117,7 +119,9 @@ LayoutBuilderMove.prototype = {
      * @protected
      */
     _addColMoveTarget: function(col, index) {
-        var target = A.Node.create(TPL_MOVE_TARGET);
+        var target = A.Node.create(A.Lang.sub(TPL_MOVE_TARGET, {
+            pasteHere: this.get('strings').pasteHere
+        }));
 
         target.setData('col-index', index);
         target.addClass(CSS_MOVE_COL_TARGET);
@@ -335,7 +339,6 @@ LayoutBuilderMove.prototype = {
         this._removeAllCutButton(cutButton);
 
         if (cutButton.hasClass(CSS_MOVE_CANCEL)) {
-            cutButton.toggleClass(CSS_MOVE_CANCEL);
             this.cancelMove();
             return;
         }
@@ -387,7 +390,9 @@ LayoutBuilderMove.prototype = {
             }
 
             if (currentRow.getData('layout-row').get('movable')) {
-                target = A.Node.create(TPL_MOVE_TARGET);
+                target = A.Node.create(A.Lang.sub(TPL_MOVE_TARGET, {
+                    pasteHere: this.get('strings').pasteHere
+                }));
                 target.addClass(CSS_MOVE_ROW_TARGET);
                 target.setData('row-index', currentIndex);
                 containerRow.insert(target, direction);
@@ -506,6 +511,16 @@ LayoutBuilderMove.prototype = {
     },
 
     /**
+     * Fires when the esc key is pressed.
+     *
+     * @method _onEscKey
+     * @protected
+     */
+    _onEscKey: function () {
+        this.cancelMove();
+    },
+
+    /**
      * Fires when key press on cut button.
      *
      * @method _onKeyPressOnMoveCutButton
@@ -513,6 +528,7 @@ LayoutBuilderMove.prototype = {
      * @protected
      */
     _onKeyPressOnMoveCutButton: function(event) {
+        event.preventDefault();
         this._clickOnCutButton(event.currentTarget);
     },
 

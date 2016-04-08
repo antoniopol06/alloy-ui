@@ -4,6 +4,40 @@
 
 ## @VERSION@
 
+* [AUI-2100](https://issues.liferay.com/browse/AUI-2100) Increase font family support
+* [AUI-2099](https://issues.liferay.com/browse/AUI-2099) Refactor A.FormBuilderFieldList._uiSetFields
+* [AUI-2097](https://issues.liferay.com/browse/AUI-2097) Move field button doesn't appear if the user navigates pressing tab key
+* [AUI-2096](https://issues.liferay.com/browse/AUI-2096) Should not able to edit column under the modal
+* [AUI-2090](https://issues.liferay.com/browse/AUI-2090) Passing strings to FormBuilderFieldList class from FromBuilder class
+* [AUI-2091](https://issues.liferay.com/browse/AUI-2091) Removing redundant code to handle modal hide
+* [AUI-2090](https://issues.liferay.com/browse/AUI-2090) Create string attribute entries to those sentences which are inside templates
+* [AUI-2072](https://issues.liferay.com/browse/AUI-2072) Paste row area and paste field area should have the same add field button's style
+* [AUI-2076](https://issues.liferay.com/browse/AUI-2076) Improving the way to reference the move field button
+* [AUI-2073](https://issues.liferay.com/browse/AUI-2073) Set the tab order on Form Builder
+* [AUI-2069](https://issues.liferay.com/browse/AUI-2069) Unexpected Visual Behavior after removing a field
+* [AUI-1994](https://issues.liferay.com/browse/AUI-1994) Adds borders as separators on the Form Builder
+* [AUI-2033](https://issues.liferay.com/browse/AUI-2033) Change add/resize column icon
+* [AUI-2056](https://issues.liferay.com/browse/AUI-2056) User has to click multiple times to get Form Builder Field Toolbar active
+
+## [3.0.3](https://github.com/liferay/alloy-ui/releases/tag/3.0.3)
+
+* [AUI-2048](https://issues.liferay.com/browse/AUI-2048) Form Builder Add Field Button overlap each other on IE11
+
+## [3.0.2](https://github.com/liferay/alloy-ui/releases/tag/3.0.2)
+
+* [AUI-2030](https://issues.liferay.com/browse/AUI-2030) A row with one col should be automatically added on last position when the last row have at least one field
+* [AUI-2036](https://issues.liferay.com/browse/AUI-2036) AUI Form Builder Field Settings Modal should not overwrite Bootstrap 3 Modal css rules so that the layout keeps as similar as possible
+* [AUI-2032](https://issues.liferay.com/browse/AUI-2032) Move out logic that displays field types modal
+* [AUI-2016](https://issues.liferay.com/browse/AUI-2016) Remove column delete button from From Builder
+* [AUI-2019](https://issues.liferay.com/browse/AUI-2019) The Active page number shouldn't appear over the Fields Panel
+* [AUI-2018](https://issues.liferay.com/browse/AUI-2018) Create a template variable to form builder modal head content
+* [AUI-2017](https://issues.liferay.com/browse/AUI-2017) Buttons in fields settings modal should follow bootstrap visual patterns
+* [AUI-2000](https://issues.liferay.com/browse/AUI-2000) Add borders as separators on the grid
+* [AUI-2014](https://issues.liferay.com/browse/AUI-2014) Changes the default value of the strings attribute from FormBuilderPageManager class
+* [AUI-1993](https://issues.liferay.com/browse/AUI-1993) Change the add Field button
+* [AUI-1995](https://issues.liferay.com/browse/AUI-1995) Extract the UI rendering logic from initializer
+* [AUI-1962](https://issues.liferay.com/browse/AUI-1962) Updating the Page Manager to use a Popover with add/remove page instead of buttons
+* [AUI-1992](https://issues.liferay.com/browse/AUI-1992) Extract the rendering pagination logic from initializer
 * [AUI-1951](https://issues.liferay.com/browse/AUI-1951) Add attribute mode on Form Builder Pages
 * [AUI-1930](https://issues.liferay.com/browse/AUI-1930) Change functionality of add cols
 * [AUI-1931](https://issues.liferay.com/browse/AUI-1931) Add Tabs View mode

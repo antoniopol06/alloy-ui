@@ -372,7 +372,8 @@
         "requires": [
             "aui-datatable-base-cell-editor",
             "escape"
-        ]
+        ],
+        "skinnable": true
     },
     "aui-datatable-body": {
         "requires": [
@@ -871,9 +872,15 @@
     "aui-form-builder-field-types": {
         "requires": [
             "aui-classnamemanager",
-            "aui-modal",
+            "aui-form-builder-field-types-modal",
             "base",
             "node-base"
+        ],
+        "skinnable": true
+    },
+    "aui-form-builder-field-types-modal": {
+        "requires": [
+            "aui-modal"
         ],
         "skinnable": true
     },
@@ -890,6 +897,7 @@
     "aui-form-builder-page-manager": {
         "requires": [
             "aui-pagination",
+            "aui-popover",
             "aui-tabview",
             "base",
             "event-valuechange",
@@ -1047,7 +1055,8 @@
             "base-build",
             "imageloader",
             "node-base",
-            "widget"
+            "widget",
+            "widget-stack"
         ],
         "skinnable": true
     },
@@ -1157,7 +1166,6 @@
             "aui-layout-builder-add-col",
             "aui-layout-builder-add-row",
             "aui-layout-builder-move",
-            "aui-layout-builder-remove-col",
             "aui-layout-builder-remove-row",
             "aui-layout-builder-resize-col",
             "aui-node-base",
@@ -1186,13 +1194,6 @@
         "requires": [
             "aui-node-base",
             "base-build"
-        ],
-        "skinnable": true
-    },
-    "aui-layout-builder-remove-col": {
-        "requires": [
-            "event-key",
-            "node-base"
         ],
         "skinnable": true
     },
@@ -1719,6 +1720,7 @@
             "dd-drag",
             "dd-drop",
             "dd-proxy",
+            "dd-scroll",
             "aui-node",
             "aui-component"
         ]
@@ -1761,7 +1763,8 @@
     },
     "aui-surface-screen-html": {
         "requires": [
-            "io",
+            "aui-base",
+            "aui-io-request",
             "aui-promise",
             "aui-surface-screen",
             "aui-url"
