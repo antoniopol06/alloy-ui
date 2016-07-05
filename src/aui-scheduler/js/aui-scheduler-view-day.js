@@ -893,17 +893,11 @@ var SchedulerDayView = A.Component.create({
          * @method syncCurrentTimeUI
          */
         syncCurrentTimeUI: function() {
-            var currentTimeNode = this.get('currentTimeNode'),
-                todayColumn = this.colDaysNode.get('parentNode').one('.' + CSS_SCHEDULER_TODAY);
+            var instance = this;
+            var scheduler = instance.get('scheduler');
+            var currentTime = scheduler.get('currentTimeFn');
 
-            if (todayColumn) {
-                todayColumn.one('.' + CSS_SCHEDULER_VIEW_DAY_TABLE_COL_SHIM).append(currentTimeNode);
-
-                currentTimeNode.setStyle('top', this.calculateTop(new Date()) + 'px');
-            }
-            else {
-                currentTimeNode.remove();
-            }
+            currentTime(A.bind(instance._moveCurrentTimeNode, instance));
         },
 
         /**
@@ -1296,6 +1290,30 @@ var SchedulerDayView = A.Component.create({
         },
 
         /**
+         * Move the red line representing the current time to a specific point,
+         * determined by the given {Date} object.
+         *
+         * @method _moveCurrentTimeNode
+         * @param {Date} time
+         * @protected
+         */
+        _moveCurrentTimeNode: function(time) {
+            var instance = this;
+
+            var currentTimeNode = instance.get('currentTimeNode');
+            var todayColumn = instance.colDaysNode.get('parentNode').one('.' + CSS_SCHEDULER_TODAY);
+
+            if (todayColumn) {
+                todayColumn.one('.' + CSS_SCHEDULER_VIEW_DAY_TABLE_COL_SHIM).append(currentTimeNode);
+
+                currentTimeNode.setStyle('top', instance.calculateTop(time) + 'px');
+            }
+            else {
+                currentTimeNode.remove();
+            }
+        },
+
+        /**
          * Configures a `DD.Delegate` that handles `DD` events for this
          * `SchedulerDayView`.
          *
@@ -1462,6 +1480,16 @@ var SchedulerDayView = A.Component.create({
             var recorder = scheduler.get('eventRecorder');
 
             if (recorder && !scheduler.get('disabled')) {
+                if (!instance.recorderPlotted) {
+                    var startDate = recorder.get('startDate');
+                    var duration = recorder.get('duration');
+                    var endDate = DateMath.add(startDate, DateMath.MINUTES, duration);
+
+                    recorder.set('endDate', endDate, {
+                        silent: true
+                    });
+                }
+
                 if (instance.creationStartDate) {
                     instance.plotEvent(recorder);
 
@@ -1470,6 +1498,7 @@ var SchedulerDayView = A.Component.create({
             }
 
             instance.creationStartDate = null;
+            instance.recorderPlotted = false;
             instance.resizing = false;
             instance.startXY = null;
 
@@ -1494,7 +1523,7 @@ var SchedulerDayView = A.Component.create({
                 recorder.hidePopover();
 
                 if (target.test('.' + CSS_SCHEDULER_VIEW_DAY_TABLE_COL_SHIM)) {
-                    this._prepareEventCreation(event);
+                    this._prepareEventCreation(event, 30);
                 }
                 else if (target.test(
                             ['.' + CSS_SCHEDULER_VIEW_DAY_RESIZER,
@@ -1550,6 +1579,7 @@ var SchedulerDayView = A.Component.create({
 
                     instance.plotEvent(recorder);
 
+                    instance.recorderPlotted = true;
                     instance._delta = delta;
                 }
             }

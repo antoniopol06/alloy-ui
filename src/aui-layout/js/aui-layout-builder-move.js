@@ -4,7 +4,8 @@
  * @module aui-layout-move
  */
 
-var CSS_MOVE_CANCEL = A.getClassName('layout', 'builder', 'move', 'cancel'),
+var CSS_MOVING = A.getClassName('layout', 'builder', 'moving'),
+    CSS_MOVE_CANCEL = A.getClassName('layout', 'builder', 'move', 'cancel'),
     CSS_MOVE_COL_TARGET = A.getClassName('layout', 'builder', 'move', 'col', 'target'),
     CSS_MOVE_CUT_BUTTON = A.getClassName('layout', 'builder', 'move', 'cut', 'button'),
     CSS_MOVE_CUT_ROW_BUTTON = A.getClassName('layout', 'builder', 'move', 'cut', 'row', 'button'),
@@ -66,6 +67,8 @@ LayoutBuilderMove.prototype = {
             this.after('layout:rowsChange', A.bind(this._afterMoveRowsChange, this)),
             this.after('layout:isColumnModeChange', A.bind(this._afterMoveIsColumnModeChange, this)),
             this.after('layoutChange', A.bind(this._afterMoveLayoutChange, this)),
+            this.after('moveStart', A.bind(this._addMovingClass, this)),
+            this.after('moveEnd', A.bind(this._afterMoveEnd, this)),
             A.one('doc').on('key', this._onEscKey, 'esc', this)
         );
 
@@ -90,7 +93,7 @@ LayoutBuilderMove.prototype = {
      * @method cancelMove
      */
     cancelMove: function() {
-        this._resetMoveUI();
+        this.fire('moveEnd');
     },
 
     /**
@@ -126,6 +129,16 @@ LayoutBuilderMove.prototype = {
         target.setData('col-index', index);
         target.addClass(CSS_MOVE_COL_TARGET);
         col.get('node').append(target);
+    },
+
+    /**
+     * Adds CSS class to indicate that any element is moving.
+     *
+     * @method _addMovingClass
+     * @protected
+     */
+    _addMovingClass: function() {
+        this._layoutContainer.addClass(CSS_MOVING);
     },
 
     /**
@@ -334,7 +347,7 @@ LayoutBuilderMove.prototype = {
      * @protected
      */
     _clickOnCutButton: function(cutButton) {
-        this._rowToBeMoved = cutButton.getData('layout-row');
+        var itemToBeMoved = this._rowToBeMoved = cutButton.getData('layout-row');
 
         this._removeAllCutButton(cutButton);
 
@@ -346,15 +359,19 @@ LayoutBuilderMove.prototype = {
         cutButton.toggleClass(CSS_MOVE_CANCEL);
 
         if (cutButton.hasClass(CSS_MOVE_CUT_ROW_BUTTON)) {
-            this._createRowTargetArea();
+            this.get('chooseRowMoveTarget')();
         }
         else {
+            itemToBeMoved = cutButton.getData('node-col').getData('layout-col');
+
             this.get('chooseColMoveTarget')(cutButton, cutButton.getData('node-col').getData('layout-col'));
         }
+
+        this.fire('moveStart', {moveElement: itemToBeMoved});
     },
 
     /**
-     * Create target area to move the row.
+     * Default value for `chooseRowMoveTarget` attribute.
      *
      * @method _createRowTargetArea
      * @protected
@@ -508,6 +525,8 @@ LayoutBuilderMove.prototype = {
         else {
             layout.moveRow(target.getData('row-index'), this._rowToBeMoved);
         }
+
+        this.fire('moveEnd', event);
     },
 
     /**
@@ -621,6 +640,27 @@ LayoutBuilderMove.prototype = {
     */
     _removeCutButtonFromRow: function(row) {
         row.one('.' + CSS_MOVE_CUT_ROW_BUTTON).remove();
+    },
+
+    /**
+    * Removes the CSS class indicating that some element has moving.
+    *
+    * @method _removeMovingClass
+    * @protected
+    */
+    _afterMoveEnd: function() {
+        this._removeMovingClass();
+        this._resetMoveUI();
+    },
+
+    /**
+    * Removes the CSS class indicating that some element has moving.
+    *
+    * @method _removeMovingClass
+    * @protected
+    */
+    _removeMovingClass: function() {
+        this._layoutContainer.removeClass(CSS_MOVING);
     },
 
     /**
@@ -754,6 +794,19 @@ LayoutBuilderMove.ATTRS = {
         validator: A.Lang.isFunction,
         valueFn: function() {
             return A.bind(this._chooseColMoveTarget, this);
+        }
+    },
+
+    /**
+     * Default function to choose target on rows.
+     *
+     * @attribute chooseRowMoveTarget
+     * @type {Function}
+     */
+    chooseRowMoveTarget: {
+        validator: A.Lang.isFunction,
+        valueFn: function() {
+            return A.bind(this._createRowTargetArea, this);
         }
     },
 

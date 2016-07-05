@@ -14,7 +14,7 @@ var Lang = A.Lang,
 
     DOC = A.config.doc,
 
-    TPL_VIDEO = '<video id="{id}" controls="controls" class="' + CSS_VIDEO_NODE + '" {height} {width}></video>',
+    TPL_VIDEO = '<video id="{id}" controls="controls" class="' + CSS_VIDEO_NODE + '"></video>',
     TPL_VIDEO_FALLBACK = '<div class="' + CSS_VIDEO_NODE + '"></div>';
 
 /**
@@ -192,6 +192,19 @@ var Video = A.Component.create({
     prototype: {
 
         /**
+          * Destructor implementation.
+          * Lifecycle.
+          *
+          * @method destructor
+          * @protected
+          */
+        destructor: function() {
+            var instance = this;
+
+            (new A.EventHandle(instance._eventHandles)).detach();
+        },
+
+        /**
          * Render the Video component instance. Lifecycle.
          *
          * @method renderUI
@@ -205,16 +218,31 @@ var Video = A.Component.create({
 
             instance._renderVideo(!instance.get('ogvUrl'));
 
-            instance._video.on('play', function (event) {
-                instance.fire('play', {
-                    cropType: event.type
-                });
-            });
-            instance._video.on('pause', function (event) {
-                instance.fire('pause', {
-                    cropType: event.type
-                });
-            });
+            instance._video.on(
+                'play',
+                function (event) {
+                    instance.fire(
+                        'play',
+                        {
+                            cropType: event.type
+                        }
+                    );
+                }
+            );
+
+            instance._video.on(
+                'pause',
+                function (event) {
+                    instance.fire(
+                        'pause',
+                        {
+                            cropType: event.type
+                        }
+                    );
+                }
+            );
+
+            instance._setResponsiveDimensions();
         },
 
         /**
@@ -227,13 +255,21 @@ var Video = A.Component.create({
             var instance = this;
 
             instance.publish(
-                'videoReady', {
+                'videoReady',
+                {
                     fireOnce: true
                 }
             );
 
             instance.publish('play');
             instance.publish('pause');
+
+            instance._eventHandles = [
+                A.after(
+                    'windowresize',
+                    A.bind('_afterWindowResize', instance)
+                )
+            ];
         },
 
         /**
@@ -246,10 +282,13 @@ var Video = A.Component.create({
             var instance = this;
 
             if (instance.get('useARIA')) {
-                instance.plug(A.Plugin.Aria, {
-                    roleName: instance.get('role'),
-                    roleNode: instance.get('contentBox')
-                });
+                instance.plug(
+                    A.Plugin.Aria,
+                    {
+                        roleName: instance.get('role'),
+                        roleNode: instance.get('contentBox')
+                    }
+                );
             }
         },
 
@@ -293,6 +332,19 @@ var Video = A.Component.create({
         },
 
         /**
+         * Fired after the `windowresize` event.
+         *
+         * @method _afterWindowResize
+         * @protected
+         */
+        _afterWindowResize: function() {
+            var instance = this;
+
+            instance._responsiveBoundingBox();
+            instance._setResponsiveDimensions();
+        },
+
+        /**
          * Create `source` element
          * using passed type attribute.
          *
@@ -320,15 +372,16 @@ var Video = A.Component.create({
             var swfUrl = instance.get('swfUrl');
 
             if (swfUrl) {
-                var videoUrl = instance.get('url');
-                var posterUrl = instance.get('poster');
                 var flashVars = instance.get('flashVars');
+                var posterUrl = instance.get('poster');
+                var videoUrl = instance.get('url');
 
                 A.mix(
-                    flashVars, {
+                    flashVars,
+                    {
                         controls: true,
-                        src: videoUrl,
-                        poster: posterUrl
+                        poster: posterUrl,
+                        src: videoUrl
                     }
                 );
 
@@ -345,8 +398,8 @@ var Video = A.Component.create({
 
                 if (UA.ie) {
                     tplObj += 'classid="clsid:d27cdb6e-ae6d-11cf-96b8-444553540000" ' +
-                        'codebase="http://download.macromedia.com/pub/shockwave/cabs/flash/swflash.cab#version=' +
-                        instance.get('flashPlayerVersion') + '" ';
+                              'codebase="http://download.macromedia.com/pub/shockwave/cabs/flash/swflash.cab#version=' +
+                              instance.get('flashPlayerVersion') + '" ';
                 }
                 else {
                     tplObj += 'type="application/x-shockwave-flash" data="' + swfUrl + '" ';
@@ -388,50 +441,107 @@ var Video = A.Component.create({
          * @protected
          */
         _renderVideo: function(fallback) {
-            var instance = this,
-                attrHeight,
-                attrWidth,
+            var instance,
                 height,
                 tpl,
                 tplObj,
                 video,
                 width;
 
+            instance = this;
             tpl = TPL_VIDEO;
+
+            height = instance.get('height');
+            width = instance.get('width');
 
             if (UA.gecko && fallback) {
                 tpl = TPL_VIDEO_FALLBACK;
             }
-            else {
-                attrHeight = '';
-                attrWidth = '';
-
-                height = instance.get('height');
-
-                width = instance.get('width');
-
-                if (height) {
-                    attrHeight = 'height="' + height + '"';
-                }
-
-                if (width) {
-                    attrWidth = 'width="' + width + '"';
-                }
-            }
 
             tplObj = Lang.sub(
-                tpl, {
-                    height: attrHeight,
-                    id: A.guid(),
-                    width: attrWidth
+                tpl,
+                {
+                    id: A.guid()
                 }
             );
 
             video = A.Node.create(tplObj);
 
+            if (width) {
+                video.width(width);
+            }
+            if (height) {
+                video.height(height);
+            }
+
             instance.get('contentBox').append(video);
 
             instance._video = video;
+        },
+
+        /**
+         * Remove the defined height and width from the bounding box.
+         *
+         * @method _responsiveBoundingBox
+         * @protected
+         */
+        _responsiveBoundingBox: function() {
+            var instance = this,
+                boundingBox = instance.get('boundingBox');
+
+            boundingBox.setStyles(
+                {
+                    height: '',
+                    width: ''
+                }
+            );
+        },
+
+        /**
+         * Set the dimensions of the video player based on the window size.
+         *
+         * @method _setResponsiveDimensions
+         * @protected
+         */
+        _setResponsiveDimensions: function() {
+            var instance,
+                aspectRatio,
+                currentTargetHeight,
+                currentTargetWidth,
+                height,
+                updatedHeight,
+                updatedWidth,
+                width,
+                winNode;
+
+            instance = this;
+
+            height = instance.get('height');
+            width = instance.get('width');
+
+            aspectRatio = height / width;
+
+            updatedHeight = height;
+            updatedWidth = width;
+
+            winNode = A.one(window);
+
+            currentTargetHeight = winNode.get('innerHeight');
+
+            if (currentTargetHeight < height) {
+                updatedHeight = currentTargetHeight;
+                updatedWidth = currentTargetHeight / aspectRatio;
+            }
+
+            currentTargetWidth = winNode.get('innerWidth');
+
+            if (currentTargetWidth < width) {
+                updatedHeight = currentTargetWidth * aspectRatio;
+                updatedWidth = currentTargetWidth;
+            }
+
+            instance._video.width(updatedWidth);
+            instance._video.height(updatedHeight);
         },
 
         /**
@@ -554,18 +664,16 @@ var Video = A.Component.create({
                     instance._sourceMp4 = null;
                 }
             }
-            else {
-                if (video || !ogvUrl) {
-                    if (!sourceMp4) {
-                        sourceMp4 = instance._createSource('video/mp4;');
+            else if (video || !ogvUrl) {
+                if (!sourceMp4) {
+                    sourceMp4 = instance._createSource('video/mp4;');
 
-                        video.append(sourceMp4);
+                    video.append(sourceMp4);
 
-                        instance._sourceMp4 = sourceMp4;
-                    }
-
-                    sourceMp4.attr('src', val);
+                    instance._sourceMp4 = sourceMp4;
                 }
+
+                sourceMp4.attr('src', val);
             }
 
             instance._renderSwfTask();
